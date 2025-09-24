@@ -9,8 +9,8 @@
 ### demo
 
 ```sh
-python main.py hello encode
-# 吧阿吧？吧阿阿。吧阿？阿吧阿？阿吧阿？！
-python main.py 吧阿吧？吧阿阿。吧阿？阿吧阿？阿吧阿？！ decode
-# hello
+python main.py "hello 你好" encode
+# 咦欸咦嘿咦！咦！咦～額啊。哈？，呃啊。嘿呃嘿？，
+python main.py "咦欸咦嘿咦！咦！咦～額啊。哈？，呃啊。嘿呃嘿？，" decode
+# hello 你好
 ```
