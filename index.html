@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <title>啊吧啊吧啊吧</title>
+</head>
+<body class="bg-light">
+    <div class="container py-5">
+        <div class="row">
+            <div class="mb-3">
+                <label for="input" class="form-label fw-bold">輸入文字或阿吧語：</label>
+                <textarea class="form-control" id="input" rows="4" placeholder="輸入要編碼的文字，或要解碼的阿吧語..."></textarea>
+            </div>
+
+            <div class="d-grid gap-2 d-sm-flex justify-content-sm-center mb-4">
+                <button class="btn btn-primary px-4" onclick="encodeText()">
+                    <i class="bi bi-lock me-2"></i>編碼
+                </button>
+                <button class="btn btn-success px-4" onclick="decodeText()">
+                    <i class="bi bi-unlock me-2"></i>解碼
+                </button>
+                <button class="btn btn-secondary px-4" onclick="clearAll()">
+                    <i class="bi bi-trash me-2"></i>清除
+                </button>
+            </div>
+
+            <div id="result" class="alert alert-info" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        const SYMBOLS = [
+            "啊", "吧", "額", "哦",
+            "哈", "嘿", "咦", "嗚",
+            "欸", "嗯", "呃", "？",
+            "！", "，", "。", "～"
+        ];
+
+        const ENCODE_TABLE = {};
+        const DECODE_TABLE = {};
+
+        let index = 0;
+        for (let i of SYMBOLS) {
+            for (let ii of SYMBOLS) {
+                const twoWords = i + ii;
+                ENCODE_TABLE[index] = twoWords;
+                DECODE_TABLE[twoWords] = index;
+                index++;
+            }
+        }
+
+        // utf8 to array
+        function stringToUtf8Bytes(str) {
+            const encoder = new TextEncoder();
+            return Array.from(encoder.encode(str));
+        }
+
+        // array to utf8
+        function utf8BytesToString(bytes) {
+            const decoder = new TextDecoder('utf-8');
+            return decoder.decode(new Uint8Array(bytes));
+        }
+
+        function textToAbaba(text) {
+            const bytes = stringToUtf8Bytes(text);
+            return bytes.map(byte => ENCODE_TABLE[byte]).join('');
+        }
+
+        function ababaToText(ababaStr) {
+            if (ababaStr.length % 2 !== 0) {
+                throw new Error("阿吧語長度必須是偶數！");
+            }
+
+            const symbols = [];
+            for (let i = 0; i < ababaStr.length; i += 2) {
+                symbols.push(ababaStr.substring(i, i + 2));
+            }
+
+            const bytes = symbols.map(symbol => {
+                if (DECODE_TABLE[symbol] === undefined) {
+                    throw new Error(`未知的阿吧符號: "${symbol}"`);
+                }
+                return DECODE_TABLE[symbol];
+            });
+
+            return utf8BytesToString(bytes);
+        }
+
+        // encode ui
+        function encodeText() {
+            const input = document.getElementById('input').value;
+            const resultDiv = document.getElementById('result');
+
+            try {
+                if (!input.trim()) {
+                    showError("請輸入要編碼的文字！");
+                    return;
+                }
+                const result = textToAbaba(input);
+                showResult(result, 'alert-info');
+            } catch (error) {
+                showError("編碼錯誤: " + error.message);
+            }
+        }
+
+        // decode ui
+        function decodeText() {
+            const input = document.getElementById('input').value;
+            const resultDiv = document.getElementById('result');
+
+            try {
+                if (!input.trim()) {
+                    showError("請輸入要解碼的阿吧語！");
+                    return;
+                }
+                const result = ababaToText(input);
+                showResult(result, 'alert-success');
+            } catch (error) {
+                showError("解碼錯誤: " + error.message);
+            }
+        }
+
+        function showResult(text, alertClass) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<strong>結果：</strong><br>${text.replace(/\n/g, '<br>')}`;
+            resultDiv.className = `alert ${alertClass}`;
+            resultDiv.style.display = 'block';
+        }
+
+        function showError(message) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<strong>錯誤：</strong> ${message}`;
+            resultDiv.className = 'alert alert-danger';
+            resultDiv.style.display = 'block';
+        }
+
+        function clearAll() {
+            document.getElementById('input').value = '';
+            document.getElementById('result').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
